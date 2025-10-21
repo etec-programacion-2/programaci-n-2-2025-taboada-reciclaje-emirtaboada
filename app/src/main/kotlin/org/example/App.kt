@@ -21,7 +21,8 @@ fun main() {
         println("6. Ver Puntos de Reciclaje")
         println("7. Ver Usuarios")
         println("8. Ver Mi Perfil")
-        println("9. Salir")
+        println("9. Ver Historial de Punto de Reciclaje")
+        println("10. Salir")
         println("═══════════════════════════════════════")
         print("Selecciona una opción: ")
         
@@ -41,6 +42,20 @@ fun main() {
             7 -> Usuario.verTodos(usuarios)
             8 -> usuarioActual?.verPerfil() ?: println("\n❌ No has seleccionado un usuario")
             9 -> {
+                if (puntosReciclaje.isEmpty()) {
+                    println("\n❌ No hay puntos de reciclaje creados")
+                } else {
+                    println("\n--- SELECCIONAR PUNTO DE RECICLAJE ---")
+                    puntosReciclaje.forEachIndexed { index, punto ->
+                        println("${index + 1}. ${punto.nombre}")
+                    }
+                    print("Selecciona el punto: ")
+                    val index = (scanner.nextLine().toIntOrNull() ?: 1) - 1
+                    puntosReciclaje.getOrNull(index)?.verHistorial() 
+                        ?: println("\n❌ Punto no válido")
+                }
+            }
+            10 -> {
                 println("\n¡Gracias por reciclar! Hasta pronto 🌱")
                 scanner.close()
                 return

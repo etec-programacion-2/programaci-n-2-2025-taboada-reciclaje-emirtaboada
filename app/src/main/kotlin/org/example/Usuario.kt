@@ -30,9 +30,20 @@ data class Usuario(
 
     fun reciclar(materiales: List<MaterialReciclable>, puntos: List<PuntoDeReciclaje>, scanner: Scanner) {
         println("\n--- RECICLAR MATERIAL ---")
+        
+        if (materiales.isEmpty()) {
+            println("❌ No hay materiales disponibles")
+            return
+        }
+        
+        if (puntos.isEmpty()) {
+            println("❌ No hay puntos de reciclaje disponibles")
+            return
+        }
+        
         println("Materiales disponibles:")
         materiales.forEachIndexed { index, material ->
-            println("${index + 1}. ${material.nombre} (${material.tipo})")
+            println("${index + 1}. ${material.nombre} (${material.tipo}) - ${material.pesoKg} kg")
         }
         print("Selecciona el material a reciclar: ")
         val materialIndex = (scanner.nextLine().toIntOrNull() ?: 1) - 1
@@ -56,13 +67,32 @@ data class Usuario(
             return
         }
         
-        if (puntoSeleccionado.aceptaMaterial(materialSeleccionado.tipo)) {
-            val puntosGanados = materialSeleccionado.calcularPuntos()
+        // Solicitar la cantidad a reciclar
+        print("Cantidad a reciclar (kg) [${materialSeleccionado.pesoKg}]: ")
+        val cantidadInput = scanner.nextLine()
+        val cantidad = if (cantidadInput.isBlank()) {
+            materialSeleccionado.pesoKg
+        } else {
+            cantidadInput.toDoubleOrNull() ?: materialSeleccionado.pesoKg
+        }
+        
+        // Intentar recibir el material en el punto de reciclaje
+        if (puntoSeleccionado.recibirMaterial(materialSeleccionado, cantidad)) {
+            // Calcular puntos basados en la cantidad reciclada
+            val puntosGanados = (cantidad * when (materialSeleccionado.tipo) {
+                TipoMaterial.PLASTICO -> 5
+                TipoMaterial.VIDRIO -> 3
+                TipoMaterial.PAPEL -> 2
+                TipoMaterial.METAL -> 4
+                TipoMaterial.ORGANICO -> 1
+            }).toInt()
+            
             agregarPuntos(puntosGanados)
+            
             println("\n✅ ¡Reciclaje exitoso!")
-            println("$nombre recicló '${materialSeleccionado.nombre}' en '${puntoSeleccionado.nombre}'")
+            println("$nombre recicló $cantidad kg de '${materialSeleccionado.nombre}' en '${puntoSeleccionado.nombre}'")
             println("🌟 Ganaste $puntosGanados puntos")
-            println("📊 Puntos totales: $puntos")
+            println("📊 Puntos totales: $this.puntos")
         } else {
             println("\n❌ El punto '${puntoSeleccionado.nombre}' no acepta ${materialSeleccionado.tipo}")
             println("Materiales aceptados: ${puntoSeleccionado.materialesAceptados}")

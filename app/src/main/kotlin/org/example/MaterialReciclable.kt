@@ -1,40 +1,45 @@
 package org.example
 
+import java.util.Scanner
+
 data class MaterialReciclable(
     val nombre: String,
     val descripcion: String,
-    val tipo: TipoMaterial
+    val tipo: TipoMaterial,
+    val pesoKg: Double
 ) {
     fun calcularPuntos(): Int {
         return when (tipo) {
-            TipoMaterial.PLASTICO -> 10
-            TipoMaterial.VIDRIO -> 15
-            TipoMaterial.PAPEL -> 8
-            TipoMaterial.METAL -> 20
-            TipoMaterial.ORGANICO -> 5
+            TipoMaterial.PLASTICO -> (pesoKg * 5).toInt()
+            TipoMaterial.VIDRIO -> (pesoKg * 3).toInt()
+            TipoMaterial.PAPEL -> (pesoKg * 2).toInt()
+            TipoMaterial.METAL -> (pesoKg * 4).toInt()
+            TipoMaterial.ORGANICO -> (pesoKg * 1).toInt()
         }
     }
 
     companion object {
-        fun crear(materiales: MutableList<MaterialReciclable>) {
+        fun crear(materiales: MutableList<MaterialReciclable>, scanner: Scanner) {
             println("\n--- CREAR MATERIAL RECICLABLE ---")
             
-            print("Nombre del material: ")
-            val nombre = readLine() ?: ""
+            print("Nombre: ")
+            val nombre = scanner.nextLine()
             
             print("Descripción: ")
-            val descripcion = readLine() ?: ""
+            val descripcion = scanner.nextLine()
             
-            println("\nTipos de material disponibles:")
+            println("\nSelecciona el tipo de material:")
             TipoMaterial.values().forEachIndexed { index, tipo ->
                 println("${index + 1}. $tipo")
             }
-            print("Selecciona el tipo (1-${TipoMaterial.values().size}): ")
-            val tipoIndex = (readLine()?.toIntOrNull() ?: 1) - 1
-            
-            val tipo = TipoMaterial.values().getOrNull(tipoIndex) ?: TipoMaterial.PLASTICO
-            
-            val material = MaterialReciclable(nombre, descripcion, tipo)
+            print("Opción: ")
+            val tipoSeleccionado = TipoMaterial.values()
+                .getOrNull((scanner.nextLine().toIntOrNull() ?: 1) - 1) ?: TipoMaterial.PLASTICO
+
+            print("Peso (kg): ")
+            val peso = scanner.nextLine().toDoubleOrNull() ?: 0.5
+
+            val material = MaterialReciclable(nombre, descripcion, tipoSeleccionado, peso)
             materiales.add(material)
             
             println("\n✅ Material creado exitosamente:")
@@ -42,11 +47,13 @@ data class MaterialReciclable(
         }
 
         fun verTodos(materiales: List<MaterialReciclable>) {
-            println("\n--- MATERIALES RECICLABLES ---")
+            println("\n--- MATERIALES REGISTRADOS ---")
             if (materiales.isEmpty()) {
-                println("No hay materiales creados aún.")
+                println("No hay materiales aún.")
             } else {
-                materiales.forEach { println(it) }
+                materiales.forEach {
+                    println("${it.nombre} - ${it.tipo} (${it.descripcion}) - ${it.pesoKg} kg")
+                }
             }
         }
     }

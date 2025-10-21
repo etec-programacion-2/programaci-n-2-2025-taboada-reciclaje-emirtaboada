@@ -1,6 +1,9 @@
 package org.example
 
+import java.util.Scanner
+
 fun main() {
+    val scanner = Scanner(System.`in`)
     val materiales = mutableListOf<MaterialReciclable>()
     val puntosReciclaje = mutableListOf<PuntoDeReciclaje>()
     val usuarios = mutableListOf<Usuario>()
@@ -22,13 +25,13 @@ fun main() {
         println("═══════════════════════════════════════")
         print("Selecciona una opción: ")
         
-        when (readLine()?.toIntOrNull()) {
-            1 -> MaterialReciclable.crear(materiales)
-            2 -> PuntoDeReciclaje.crear(puntosReciclaje)
-            3 -> usuarioActual = Usuario.crearOSeleccionar(usuarios)
+        when (scanner.nextLine().toIntOrNull()) {
+            1 -> MaterialReciclable.crear(materiales, scanner)
+            2 -> PuntoDeReciclaje.crear(puntosReciclaje, scanner)
+            3 -> usuarioActual = Usuario.crearOSeleccionar(usuarios, scanner)
             4 -> {
                 if (usuarioActual != null && materiales.isNotEmpty() && puntosReciclaje.isNotEmpty()) {
-                    usuarioActual.reciclar(materiales, puntosReciclaje)
+                    usuarioActual.reciclar(materiales, puntosReciclaje, scanner)
                 } else {
                     println("\n❌ Necesitas: usuario (opción 3), materiales (opción 1) y puntos (opción 2)")
                 }
@@ -39,6 +42,7 @@ fun main() {
             8 -> usuarioActual?.verPerfil() ?: println("\n❌ No has seleccionado un usuario")
             9 -> {
                 println("\n¡Gracias por reciclar! Hasta pronto 🌱")
+                scanner.close()
                 return
             }
             else -> println("\n❌ Opción inválida. Intenta nuevamente.")

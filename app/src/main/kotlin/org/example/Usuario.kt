@@ -1,5 +1,7 @@
 package org.example
 
+import java.util.Scanner
+
 data class Usuario(
     val nombre: String,
     val email: String,
@@ -26,14 +28,14 @@ data class Usuario(
         println("Nivel: $nivel")
     }
 
-    fun reciclar(materiales: List<MaterialReciclable>, puntos: List<PuntoDeReciclaje>) {
+    fun reciclar(materiales: List<MaterialReciclable>, puntos: List<PuntoDeReciclaje>, scanner: Scanner) {
         println("\n--- RECICLAR MATERIAL ---")
         println("Materiales disponibles:")
         materiales.forEachIndexed { index, material ->
             println("${index + 1}. ${material.nombre} (${material.tipo})")
         }
         print("Selecciona el material a reciclar: ")
-        val materialIndex = (readLine()?.toIntOrNull() ?: 1) - 1
+        val materialIndex = (scanner.nextLine().toIntOrNull() ?: 1) - 1
         val materialSeleccionado = materiales.getOrNull(materialIndex)
         
         if (materialSeleccionado == null) {
@@ -46,7 +48,7 @@ data class Usuario(
             println("${index + 1}. ${punto.nombre} - Acepta: ${punto.materialesAceptados}")
         }
         print("Selecciona el punto de reciclaje: ")
-        val puntoIndex = (readLine()?.toIntOrNull() ?: 1) - 1
+        val puntoIndex = (scanner.nextLine().toIntOrNull() ?: 1) - 1
         val puntoSeleccionado = puntos.getOrNull(puntoIndex)
         
         if (puntoSeleccionado == null) {
@@ -68,7 +70,7 @@ data class Usuario(
     }
 
     companion object {
-        fun crearOSeleccionar(usuarios: MutableList<Usuario>): Usuario {
+        fun crearOSeleccionar(usuarios: MutableList<Usuario>, scanner: Scanner): Usuario {
             println("\n--- USUARIO ---")
             
             if (usuarios.isNotEmpty()) {
@@ -77,9 +79,9 @@ data class Usuario(
                     println("${index + 1}. ${usuario.nombre} (${usuario.email}) - ${usuario.puntos} puntos")
                 }
                 print("¿Seleccionar usuario existente? (S/N): ")
-                if (readLine()?.uppercase() == "S") {
+                if (scanner.nextLine().uppercase() == "S") {
                     print("Número de usuario: ")
-                    val index = (readLine()?.toIntOrNull() ?: 1) - 1
+                    val index = (scanner.nextLine().toIntOrNull() ?: 1) - 1
                     usuarios.getOrNull(index)?.let {
                         println("\n✅ Usuario seleccionado: ${it.nombre}")
                         return it
@@ -88,10 +90,10 @@ data class Usuario(
             }
             
             print("Nombre: ")
-            val nombre = readLine() ?: ""
+            val nombre = scanner.nextLine()
             
             print("Email: ")
-            val email = readLine() ?: ""
+            val email = scanner.nextLine()
             
             val usuario = Usuario(nombre, email)
             usuarios.add(usuario)

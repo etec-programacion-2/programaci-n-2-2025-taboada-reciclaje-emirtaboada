@@ -1,5 +1,7 @@
 package org.example
 
+import java.util.Scanner
+
 data class PuntoDeReciclaje(
     val nombre: String,
     val direccion: String,
@@ -10,25 +12,30 @@ data class PuntoDeReciclaje(
     }
 
     companion object {
-        fun crear(puntos: MutableList<PuntoDeReciclaje>) {
+        fun crear(puntos: MutableList<PuntoDeReciclaje>, scanner: Scanner) {
             println("\n--- CREAR PUNTO DE RECICLAJE ---")
             
             print("Nombre del punto: ")
-            val nombre = readLine() ?: ""
+            val nombre = scanner.nextLine()
             
             print("Dirección: ")
-            val direccion = readLine() ?: ""
+            val direccion = scanner.nextLine()
             
             println("\nSelecciona los materiales aceptados (separados por coma, ej: 1,2,3):")
             TipoMaterial.values().forEachIndexed { index, tipo ->
                 println("${index + 1}. $tipo")
             }
             print("Selección: ")
-            val seleccion = readLine() ?: ""
+            val seleccion = scanner.nextLine()
             
             val materialesAceptados = seleccion.split(",")
                 .mapNotNull { it.trim().toIntOrNull() }
                 .mapNotNull { TipoMaterial.values().getOrNull(it - 1) }
+            
+            if (materialesAceptados.isEmpty()) {
+                println("\n❌ No se seleccionaron materiales válidos")
+                return
+            }
             
             val punto = PuntoDeReciclaje(nombre, direccion, materialesAceptados)
             puntos.add(punto)
@@ -46,7 +53,7 @@ data class PuntoDeReciclaje(
                     println(punto)
                     println("  Materiales aceptados:")
                     punto.materialesAceptados.forEach { tipo ->
-                        println("  - $tipo: ${punto.aceptaMaterial(tipo)}")
+                        println("  - $tipo")
                     }
                     println()
                 }

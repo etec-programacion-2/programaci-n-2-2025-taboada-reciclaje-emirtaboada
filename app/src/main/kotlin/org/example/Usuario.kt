@@ -12,6 +12,11 @@ data class Usuario(
             puntos += cantidad
         }
     }
+    
+
+    fun sumarPuntos(puntos: Int) {
+        agregarPuntos(puntos)
+    }
 
     fun verPerfil() {
         println("\n--- MI PERFIL ---")
@@ -78,16 +83,10 @@ data class Usuario(
         
         // Intentar recibir el material en el punto de reciclaje
         if (puntoSeleccionado.recibirMaterial(materialSeleccionado, cantidad)) {
-            // Calcular puntos basados en la cantidad reciclada
-            val puntosGanados = (cantidad * when (materialSeleccionado.tipo) {
-                TipoMaterial.PLASTICO -> 5
-                TipoMaterial.VIDRIO -> 3
-                TipoMaterial.PAPEL -> 2
-                TipoMaterial.METAL -> 4
-                TipoMaterial.ORGANICO -> 1
-            }).toInt()
+            // Calcular puntos usando CalculadoraPuntos
+            val puntosGanados = CalculadoraPuntos.calcularPuntos(materialSeleccionado, cantidad)
             
-            agregarPuntos(puntosGanados)
+            sumarPuntos(puntosGanados)
             
             println("\n✅ ¡Reciclaje exitoso!")
             println("$nombre recicló $cantidad kg de '${materialSeleccionado.nombre}' en '${puntoSeleccionado.nombre}'")

@@ -8,14 +8,12 @@ data class MaterialReciclable(
     val tipo: TipoMaterial,
     val pesoKg: Double
 ) {
+    /**
+     * Calcula los puntos que otorgaría reciclar este material.
+     * Delega el cálculo a CalculadoraPuntos.
+     */
     fun calcularPuntos(): Int {
-        return when (tipo) {
-            TipoMaterial.PLASTICO -> (pesoKg * 5).toInt()
-            TipoMaterial.VIDRIO -> (pesoKg * 3).toInt()
-            TipoMaterial.PAPEL -> (pesoKg * 2).toInt()
-            TipoMaterial.METAL -> (pesoKg * 4).toInt()
-            TipoMaterial.ORGANICO -> (pesoKg * 1).toInt()
-        }
+        return CalculadoraPuntos.calcularPuntos(this, pesoKg)
     }
 
     companion object {
@@ -30,7 +28,8 @@ data class MaterialReciclable(
             
             println("\nSelecciona el tipo de material:")
             TipoMaterial.values().forEachIndexed { index, tipo ->
-                println("${index + 1}. $tipo")
+                val factor = CalculadoraPuntos.obtenerFactorPuntos(tipo)
+                println("${index + 1}. $tipo ($factor puntos/kg)")
             }
             print("Opción: ")
             val tipoSeleccionado = TipoMaterial.values()
@@ -44,6 +43,7 @@ data class MaterialReciclable(
             
             println("\n✅ Material creado exitosamente:")
             println(material)
+            println("💰 Puntos potenciales: ${material.calcularPuntos()}")
         }
 
         fun verTodos(materiales: List<MaterialReciclable>) {
@@ -53,6 +53,7 @@ data class MaterialReciclable(
             } else {
                 materiales.forEach {
                     println("${it.nombre} - ${it.tipo} (${it.descripcion}) - ${it.pesoKg} kg")
+                    println("  💰 Puntos potenciales: ${it.calcularPuntos()}")
                 }
             }
         }

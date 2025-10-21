@@ -22,7 +22,8 @@ fun main() {
         println("7. Ver Usuarios")
         println("8. Ver Mi Perfil")
         println("9. Ver Historial de Punto de Reciclaje")
-        println("10. Salir")
+        println("10. Ver Tabla de Puntos")
+        println("11. Salir")
         println("═══════════════════════════════════════")
         print("Selecciona una opción: ")
         

@@ -23,7 +23,10 @@ fun main() {
         println("8. Ver Mi Perfil")
         println("9. Ver Historial de Punto de Reciclaje")
         println("10. Ver Tabla de Puntos")
-        println("11. Salir")
+        println("11. Ver Mi Historial de Reciclajes")
+        println("12. Ver Todos los Registros")
+        println("13. Ver Estadísticas Generales")
+        println("14. Salir")
         println("═══════════════════════════════════════")
         print("Selecciona una opción: ")
         
@@ -56,7 +59,8 @@ fun main() {
                         ?: println("\n❌ Punto no válido")
                 }
             }
-            10 -> {
+            10 -> CalculadoraPuntos.mostrarTablaPuntos()
+            11 -> {
                 println("\n¡Gracias por reciclar! Hasta pronto 🌱")
                 scanner.close()
                 return

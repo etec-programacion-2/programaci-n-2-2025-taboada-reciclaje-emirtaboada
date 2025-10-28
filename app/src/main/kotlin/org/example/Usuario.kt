@@ -13,7 +13,10 @@ data class Usuario(
         }
     }
     
-
+    /**
+     * Suma puntos al usuario (alias de agregarPuntos para cumplir con la consigna).
+     * @param puntos La cantidad de puntos a sumar
+     */
     fun sumarPuntos(puntos: Int) {
         agregarPuntos(puntos)
     }
@@ -31,6 +34,38 @@ data class Usuario(
             else -> "Experto 🏆"
         }
         println("Nivel: $nivel")
+        
+        // Mostrar estadísticas de reciclaje
+        val misRegistros = RepositorioRegistros.obtenerPorUsuario(this)
+        println("\n📊 Mis estadísticas:")
+        println("  • Total de reciclajes: ${misRegistros.size}")
+        if (misRegistros.isNotEmpty()) {
+            val totalKg = misRegistros.sumOf { it.cantidad }
+            println("  • Total reciclado: ${"%.2f".format(totalKg)} kg")
+        }
+    }
+    
+    /**
+     * Muestra el historial completo de reciclajes del usuario
+     */
+    fun verHistorialReciclaje() {
+        println("\n═══════════════════════════════════════")
+        println("    HISTORIAL DE $nombre")
+        println("═══════════════════════════════════════")
+        
+        val misRegistros = RepositorioRegistros.obtenerPorUsuario(this)
+        
+        if (misRegistros.isEmpty()) {
+            println("Aún no has reciclado nada.")
+        } else {
+            println("Total de reciclajes: ${misRegistros.size}")
+            println("\n--- Registros ---")
+            misRegistros.forEachIndexed { index, registro ->
+                println("\n#${index + 1}")
+                registro.mostrar()
+            }
+        }
+        println("═══════════════════════════════════════")
     }
 
     fun reciclar(materiales: List<MaterialReciclable>, puntos: List<PuntoDeReciclaje>, scanner: Scanner) {

@@ -35,12 +35,18 @@ data class Usuario(
         }
         println("Nivel: $nivel")
         
-        val misRegistros = RepositorioRegistros.obtenerPorUsuario(this)
+        val estadisticas = GestorDeReciclaje.calcularEstadisticasUsuario(this)
         println("\n📊 Mis estadísticas:")
-        println("  • Total de reciclajes: ${misRegistros.size}")
-        if (misRegistros.isNotEmpty()) {
-            val totalKg = misRegistros.sumOf { it.cantidad }
-            println("  • Total reciclado: ${"%.2f".format(totalKg)} kg")
+        println("  • Total de reciclajes: ${estadisticas.totalReciclajes}")
+        if (estadisticas.totalReciclajes > 0) {
+            println("  • Total reciclado: ${"%.2f".format(estadisticas.totalKgReciclados)} kg")
+            
+            if (estadisticas.materialesPorTipo.isNotEmpty()) {
+                println("  • Por tipo de material:")
+                estadisticas.materialesPorTipo.forEach { (tipo, kg) ->
+                    println("    - $tipo: ${"%.2f".format(kg)} kg")
+                }
+            }
         }
     }
     
@@ -48,11 +54,11 @@ data class Usuario(
      * Muestra el historial completo de reciclajes del usuario
      */
     fun verHistorialReciclaje() {
-        println("\n═══════════════════════════════════════")
+        println("\n╔═══════════════════════════════════════╗")
         println("    HISTORIAL DE $nombre")
-        println("═══════════════════════════════════════")
+        println("╚═══════════════════════════════════════╝")
         
-        val misRegistros = RepositorioRegistros.obtenerPorUsuario(this)
+        val misRegistros = GestorDeReciclaje.obtenerHistorialUsuario(this)
         
         if (misRegistros.isEmpty()) {
             println("Aún no has reciclado nada.")
@@ -64,7 +70,7 @@ data class Usuario(
                 registro.mostrar()
             }
         }
-        println("═══════════════════════════════════════")
+        println("╚═══════════════════════════════════════╝")
     }
 
     fun reciclar(materiales: List<MaterialReciclable>, puntos: List<PuntoDeReciclaje>, scanner: Scanner) {
@@ -80,6 +86,7 @@ data class Usuario(
             return
         }
         
+        // Selección de material
         println("Materiales disponibles:")
         materiales.forEachIndexed { index, material ->
             println("${index + 1}. ${material.nombre} (${material.tipo}) - ${material.pesoKg} kg")
@@ -93,6 +100,7 @@ data class Usuario(
             return
         }
         
+        // Selección de punto de reciclaje
         println("\nPuntos de reciclaje disponibles:")
         puntos.forEachIndexed { index, punto ->
             println("${index + 1}. ${punto.nombre} - Acepta: ${punto.materialesAceptados}")
@@ -106,6 +114,20 @@ data class Usuario(
             return
         }
         
+        // Validación previa
+        val validacion = GestorDeReciclaje.validarReciclaje(
+            materialSeleccionado,
+            puntoSeleccionado,
+            materialSeleccionado.pesoKg
+        )
+        
+        if (!validacion.valido) {
+            println("\n❌ No es posible realizar el reciclaje:")
+            validacion.errores.forEach { println("  • $it") }
+            return
+        }
+        
+        // Solicitar cantidad
         print("Cantidad a reciclar (kg) [${materialSeleccionado.pesoKg}]: ")
         val cantidadInput = scanner.nextLine()
         val cantidad = if (cantidadInput.isBlank()) {
@@ -114,24 +136,22 @@ data class Usuario(
             cantidadInput.toDoubleOrNull() ?: materialSeleccionado.pesoKg
         }
         
-        // Intentar recibir el material en el punto de reciclaje
-        if (puntoSeleccionado.recibirMaterial(materialSeleccionado, cantidad)) {
-            // Calcular puntos usando CalculadoraPuntos
-            val puntosGanados = CalculadoraPuntos.calcularPuntos(materialSeleccionado, cantidad)
-            sumarPuntos(puntosGanados)
-
-            // ✅ NUEVO: Registrar la transacción en el repositorio
-            RepositorioRegistros.agregar(
-                RegistroReciclaje(this, materialSeleccionado, puntoSeleccionado, cantidad)
-            )
-            
+        // ✅ USAR GESTOR DE RECICLAJE
+        val resultado = GestorDeReciclaje.registrarReciclaje(
+            usuario = this,
+            material = materialSeleccionado,
+            punto = puntoSeleccionado,
+            cantidad = cantidad
+        )
+        
+        // Mostrar resultado
+        if (resultado.exitoso) {
             println("\n✅ ¡Reciclaje exitoso!")
-            println("$nombre recicló $cantidad kg de '${materialSeleccionado.nombre}' en '${puntoSeleccionado.nombre}'")
-            println("🌟 Ganaste $puntosGanados puntos")
+            println(resultado.mensaje)
+            println("🌟 Ganaste ${resultado.puntosGanados} puntos")
             println("📊 Puntos totales: ${this.puntos}")
         } else {
-            println("\n❌ El punto '${puntoSeleccionado.nombre}' no acepta ${materialSeleccionado.tipo}")
-            println("Materiales aceptados: ${puntoSeleccionado.materialesAceptados}")
+            println("\n❌ ${resultado.mensaje}")
         }
     }
 
@@ -180,4 +200,3 @@ data class Usuario(
         }
     }
 }
-

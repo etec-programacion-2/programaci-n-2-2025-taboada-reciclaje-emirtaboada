@@ -26,7 +26,8 @@ fun main() {
         println("11. Ver Mi Historial de Reciclajes")
         println("12. Ver Todos los Registros")
         println("13. Ver Estadísticas Generales")
-        println("14. Salir")
+        println("14. Ver Estadísticas de Punto")
+        println("15. Salir")
         println("═══════════════════════════════════════")
         print("Selecciona una opción: ")
         
@@ -64,6 +65,35 @@ fun main() {
             12 -> RepositorioRegistros.verTodos()
             13 -> RepositorioRegistros.verEstadisticas()
             14 -> {
+                if (puntosReciclaje.isEmpty()) {
+                    println("\n❌ No hay puntos de reciclaje creados")
+                } else {
+                    println("\n--- ESTADÍSTICAS DE PUNTO DE RECICLAJE ---")
+                    puntosReciclaje.forEachIndexed { index, punto ->
+                        println("${index + 1}. ${punto.nombre}")
+                    }
+                    print("Selecciona el punto: ")
+                    val index = (scanner.nextLine().toIntOrNull() ?: 1) - 1
+                    val punto = puntosReciclaje.getOrNull(index)
+                    
+                    if (punto != null) {
+                        val stats = GestorDeReciclaje.calcularEstadisticasPunto(punto)
+                        println("\n═══════════════════════════════════════")
+                        println("  ESTADÍSTICAS: ${punto.nombre}")
+                        println("═══════════════════════════════════════")
+                        println("📍 Dirección: ${punto.direccion}")
+                        println("📦 Materiales aceptados: ${punto.materialesAceptados}")
+                        println("\n📊 Estadísticas:")
+                        println("  • Total de reciclajes recibidos: ${stats.totalReciclajes}")
+                        println("  • Total de kg recibidos: ${"%.2f".format(stats.totalKgRecibidos)} kg")
+                        println("  • Usuarios únicos: ${stats.usuariosUnicos}")
+                        println("═══════════════════════════════════════")
+                    } else {
+                        println("\n❌ Punto no válido")
+                    }
+                }
+            }
+            15 -> {
                 println("\n¡Gracias por usar el sistema de reciclaje! 🌎♻️")
                 scanner.close()
                 return

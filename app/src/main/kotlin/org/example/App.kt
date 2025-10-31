@@ -60,8 +60,11 @@ fun main() {
                 }
             }
             10 -> CalculadoraPuntos.mostrarTablaPuntos()
-            11 -> {
-                println("\n¡Gracias por reciclar! Hasta pronto 🌱")
+            11 -> usuarioActual?.verHistorialReciclaje() ?: println("\n❌ No has seleccionado un usuario")
+            12 -> RepositorioRegistros.verTodos()
+            13 -> RepositorioRegistros.verEstadisticas()
+            14 -> {
+                println("\n¡Gracias por usar el sistema de reciclaje! 🌎♻️")
                 scanner.close()
                 return
             }

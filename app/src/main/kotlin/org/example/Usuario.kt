@@ -35,7 +35,6 @@ data class Usuario(
         }
         println("Nivel: $nivel")
         
-        // Mostrar estadísticas de reciclaje
         val misRegistros = RepositorioRegistros.obtenerPorUsuario(this)
         println("\n📊 Mis estadísticas:")
         println("  • Total de reciclajes: ${misRegistros.size}")
@@ -107,7 +106,6 @@ data class Usuario(
             return
         }
         
-        // Solicitar la cantidad a reciclar
         print("Cantidad a reciclar (kg) [${materialSeleccionado.pesoKg}]: ")
         val cantidadInput = scanner.nextLine()
         val cantidad = if (cantidadInput.isBlank()) {
@@ -120,13 +118,17 @@ data class Usuario(
         if (puntoSeleccionado.recibirMaterial(materialSeleccionado, cantidad)) {
             // Calcular puntos usando CalculadoraPuntos
             val puntosGanados = CalculadoraPuntos.calcularPuntos(materialSeleccionado, cantidad)
-            
             sumarPuntos(puntosGanados)
+
+            // ✅ NUEVO: Registrar la transacción en el repositorio
+            RepositorioRegistros.agregar(
+                RegistroReciclaje(this, materialSeleccionado, puntoSeleccionado, cantidad)
+            )
             
             println("\n✅ ¡Reciclaje exitoso!")
             println("$nombre recicló $cantidad kg de '${materialSeleccionado.nombre}' en '${puntoSeleccionado.nombre}'")
             println("🌟 Ganaste $puntosGanados puntos")
-            println("📊 Puntos totales: $this.puntos")
+            println("📊 Puntos totales: ${this.puntos}")
         } else {
             println("\n❌ El punto '${puntoSeleccionado.nombre}' no acepta ${materialSeleccionado.tipo}")
             println("Materiales aceptados: ${puntoSeleccionado.materialesAceptados}")
@@ -178,3 +180,4 @@ data class Usuario(
         }
     }
 }
+

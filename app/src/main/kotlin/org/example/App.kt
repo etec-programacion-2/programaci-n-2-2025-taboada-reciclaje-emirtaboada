@@ -4,10 +4,16 @@ import java.util.Scanner
 
 fun main() {
     val scanner = Scanner(System.`in`)
+    
+    // ✅ CARGAR DATOS AL INICIAR
+    val datosCargados = GestorPersistencia.cargarTodo()
     val materiales = mutableListOf<MaterialReciclable>()
-    val puntosReciclaje = mutableListOf<PuntoDeReciclaje>()
-    val usuarios = mutableListOf<Usuario>()
+    val puntosReciclaje = datosCargados.puntos.toMutableList()
+    val usuarios = datosCargados.usuarios.toMutableList()
     var usuarioActual: Usuario? = null
+    
+    // Restaurar registros en el repositorio
+    datosCargados.registros.forEach { RepositorioRegistros.agregar(it) }
 
     while (true) {
         println("\n═══════════════════════════════════════")
@@ -27,7 +33,8 @@ fun main() {
         println("12. Ver Todos los Registros")
         println("13. Ver Estadísticas Generales")
         println("14. Ver Estadísticas de Punto")
-        println("15. Salir")
+        println("15. Guardar Datos Manualmente")
+        println("16. Salir")
         println("═══════════════════════════════════════")
         print("Selecciona una opción: ")
         
@@ -94,6 +101,24 @@ fun main() {
                 }
             }
             15 -> {
+                // ✅ GUARDAR DATOS MANUALMENTE
+                GestorPersistencia.guardarTodo(
+                    usuarios = usuarios,
+                    puntos = puntosReciclaje,
+                    registros = RepositorioRegistros.obtenerTodos()
+                )
+            }
+            16 -> {
+                // ✅ GUARDAR DATOS AL SALIR
+                print("\n¿Guardar cambios antes de salir? (S/N): ")
+                if (scanner.nextLine().uppercase() != "N") {
+                    GestorPersistencia.guardarTodo(
+                        usuarios = usuarios,
+                        puntos = puntosReciclaje,
+                        registros = RepositorioRegistros.obtenerTodos()
+                    )
+                }
+                
                 println("\n¡Gracias por usar el sistema de reciclaje! 🌎♻️")
                 scanner.close()
                 return

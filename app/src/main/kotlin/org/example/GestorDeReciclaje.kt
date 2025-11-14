@@ -1,31 +1,24 @@
 package org.example
 
 /**
- * Gestor centralizado para las operaciones de reciclaje.
- * Implementa el patrón Facade para simplificar la interacción entre múltiples componentes.
- * 
- * Este gestor orquesta la colaboración entre Usuario, MaterialReciclable, 
- * PuntoDeReciclaje, CalculadoraPuntos y RepositorioRegistros.
- * 
- * Responsabilidades:
- * - Coordinar el flujo completo de una operación de reciclaje
- * - Validar que las operaciones sean posibles
- * - Calcular y asignar puntos
- * - Registrar las transacciones
- * - Proveer estadísticas centralizadas
+ * ============================================
+ * PRINCIPIO D - DEPENDENCY INVERSION
+ * ============================================
+ * GestorDeReciclaje ahora:
+ * 1. Depende de abstracciones (interfaces) NO de clases concretas
+ * 2. Las dependencias se INYECTAN por constructor
+ * 3. Implementa interfaces específicas (Principio I)
  */
-object GestorDeReciclaje {
-    
+class GestorDeReciclajeImpl(
+    private val calculadora: ICalculadoraPuntos,
+    private val repositorio: IRepositorioRegistros
+) : IGestorReciclaje, IValidadorReciclaje, ICalculadorEstadisticas {
+
     /**
      * Registra una operación completa de reciclaje.
-     * 
-     * @param usuario El usuario que realiza el reciclaje
-     * @param material El material a reciclar
-     * @param punto El punto de reciclaje donde se entrega el material
-     * @param cantidad La cantidad en kilogramos del material a reciclar
-     * @return ResultadoReciclaje con el resultado de la operación
+     * Usa las dependencias INYECTADAS en lugar de llamar a objetos globales.
      */
-    fun registrarReciclaje(
+    override fun registrarReciclaje(
         usuario: Usuario,
         material: MaterialReciclable,
         punto: PuntoDeReciclaje,
@@ -39,20 +32,20 @@ object GestorDeReciclaje {
                 puntosGanados = 0
             )
         }
-        
+
         // Validar que el punto acepte el material
         if (!punto.aceptaMaterial(material.tipo)) {
             return ResultadoReciclaje(
                 exitoso = false,
                 mensaje = "El punto '${punto.nombre}' no acepta ${material.tipo}. " +
-                         "Materiales aceptados: ${punto.materialesAceptados}",
+                        "Materiales aceptados: ${punto.materialesAceptados}",
                 puntosGanados = 0
             )
         }
-        
+
         // Intentar recibir el material en el punto
         val materialRecibido = punto.recibirMaterial(material, cantidad)
-        
+
         if (!materialRecibido) {
             return ResultadoReciclaje(
                 exitoso = false,
@@ -60,13 +53,13 @@ object GestorDeReciclaje {
                 puntosGanados = 0
             )
         }
-        
-        // Calcular puntos ganados
-        val puntosGanados = CalculadoraPuntos.calcularPuntos(material, cantidad)
-        
+
+        // ✅ Usa la interfaz inyectada (NO clase concreta)
+        val puntosGanados = calculadora.calcularPuntos(material, cantidad)
+
         // Asignar puntos al usuario
         usuario.sumarPuntos(puntosGanados)
-        
+
         // Crear y registrar el registro de reciclaje
         val registro = RegistroReciclaje(
             usuario = usuario,
@@ -74,41 +67,43 @@ object GestorDeReciclaje {
             puntoDeReciclaje = punto,
             cantidad = cantidad
         )
-        RepositorioRegistros.agregar(registro)
-        
+
+        // ✅ Usa la interfaz inyectada (NO clase concreta)
+        repositorio.agregar(registro)
+
         return ResultadoReciclaje(
             exitoso = true,
             mensaje = "${usuario.nombre} recicló ${"%.2f".format(cantidad)} kg de '${material.nombre}' " +
-                     "en '${punto.nombre}'",
+                    "en '${punto.nombre}'",
             puntosGanados = puntosGanados,
             registro = registro
         )
     }
-    
+
     /**
      * Obtiene el historial de reciclajes de un usuario específico
      */
     fun obtenerHistorialUsuario(usuario: Usuario): List<RegistroReciclaje> {
-        return RepositorioRegistros.obtenerPorUsuario(usuario)
+        return repositorio.obtenerPorUsuario(usuario)
     }
-    
+
     /**
      * Obtiene el historial de un punto de reciclaje específico
      */
     fun obtenerHistorialPunto(punto: PuntoDeReciclaje): List<RegistroReciclaje> {
-        return RepositorioRegistros.obtenerPorPunto(punto)
+        return repositorio.obtenerPorPunto(punto)
     }
-    
+
     /**
      * Calcula estadísticas para un usuario
      */
-    fun calcularEstadisticasUsuario(usuario: Usuario): EstadisticasUsuario {
+    override fun calcularEstadisticasUsuario(usuario: Usuario): EstadisticasUsuario {
         val registros = obtenerHistorialUsuario(usuario)
         val totalReciclajes = registros.size
         val totalKg = registros.sumOf { it.cantidad }
         val materialesPorTipo = registros.groupBy { it.material.tipo }
             .mapValues { (_, regs) -> regs.sumOf { it.cantidad } }
-        
+
         return EstadisticasUsuario(
             usuario = usuario,
             totalReciclajes = totalReciclajes,
@@ -116,16 +111,16 @@ object GestorDeReciclaje {
             materialesPorTipo = materialesPorTipo
         )
     }
-    
+
     /**
      * Calcula estadísticas para un punto de reciclaje
      */
-    fun calcularEstadisticasPunto(punto: PuntoDeReciclaje): EstadisticasPunto {
+    override fun calcularEstadisticasPunto(punto: PuntoDeReciclaje): EstadisticasPunto {
         val registros = obtenerHistorialPunto(punto)
         val totalReciclajes = registros.size
         val totalKg = registros.sumOf { it.cantidad }
         val usuariosUnicos = registros.map { it.usuario }.distinct().size
-        
+
         return EstadisticasPunto(
             punto = punto,
             totalReciclajes = totalReciclajes,
@@ -133,29 +128,73 @@ object GestorDeReciclaje {
             usuariosUnicos = usuariosUnicos
         )
     }
-    
+
     /**
      * Valida si un reciclaje es posible antes de ejecutarlo
      */
-    fun validarReciclaje(
+    override fun validar(
         material: MaterialReciclable,
         punto: PuntoDeReciclaje,
         cantidad: Double
     ): ValidacionReciclaje {
         val errores = mutableListOf<String>()
-        
+
         if (cantidad <= 0) {
             errores.add("La cantidad debe ser mayor a 0")
         }
-        
+
         if (!punto.aceptaMaterial(material.tipo)) {
             errores.add("El punto no acepta este tipo de material (${material.tipo})")
         }
-        
+
         return ValidacionReciclaje(
             valido = errores.isEmpty(),
             errores = errores
         )
+    }
+}
+
+/**
+ * Object singleton para mantener compatibilidad con código existente
+ */
+object GestorDeReciclaje {
+    // ✅ Inyección de dependencias: usa interfaces, no implementaciones
+    private val instance: GestorDeReciclajeImpl = GestorDeReciclajeImpl(
+        calculadora = CalculadoraPuntos.getInstance(),
+        repositorio = RepositorioRegistros.getInstance()
+    )
+
+    fun registrarReciclaje(
+        usuario: Usuario,
+        material: MaterialReciclable,
+        punto: PuntoDeReciclaje,
+        cantidad: Double
+    ): ResultadoReciclaje {
+        return instance.registrarReciclaje(usuario, material, punto, cantidad)
+    }
+
+    fun obtenerHistorialUsuario(usuario: Usuario): List<RegistroReciclaje> {
+        return instance.obtenerHistorialUsuario(usuario)
+    }
+
+    fun obtenerHistorialPunto(punto: PuntoDeReciclaje): List<RegistroReciclaje> {
+        return instance.obtenerHistorialPunto(punto)
+    }
+
+    fun calcularEstadisticasUsuario(usuario: Usuario): EstadisticasUsuario {
+        return instance.calcularEstadisticasUsuario(usuario)
+    }
+
+    fun calcularEstadisticasPunto(punto: PuntoDeReciclaje): EstadisticasPunto {
+        return instance.calcularEstadisticasPunto(punto)
+    }
+
+    fun validarReciclaje(
+        material: MaterialReciclable,
+        punto: PuntoDeReciclaje,
+        cantidad: Double
+    ): ValidacionReciclaje {
+        return instance.validar(material, punto, cantidad)
     }
 }
 

@@ -10,7 +10,7 @@ fun main() {
     val scanner = Scanner(System.`in`)
 
     // ✅ CARGAR DATOS AL INICIAR (Persistencia)
-    println("🔄 Iniciando sistema...")
+    println("📄 Iniciando sistema...")
     val datosCargados = GestorPersistencia.cargarTodo()
     val materiales = mutableListOf<MaterialReciclable>()
     val puntosReciclaje = datosCargados.puntos.toMutableList()
@@ -54,9 +54,9 @@ fun main() {
  * Muestra el menú principal del sistema
  */
 fun mostrarMenuPrincipal(usuarioActual: Usuario?) {
-    println("\n╔════════════════════════════════════════════════╗")
+    println("\n╔═══════════════════════════════════════════════╗")
     println("║     SISTEMA DE RECICLAJE INTERACTIVO 🌱       ║")
-    println("╚════════════════════════════════════════════════╝")
+    println("╚═══════════════════════════════════════════════╝")
 
     if (usuarioActual != null) {
         println("👤 Usuario: ${usuarioActual.nombre} (${usuarioActual.puntos} pts)")
@@ -87,9 +87,9 @@ fun menuGestionUsuarios(
     usuarioActual: Usuario?,
     actualizarUsuario: (Usuario) -> Unit
 ) {
-    println("\n╔════════════════════════════════════════════════╗")
+    println("\n╔═══════════════════════════════════════════════╗")
     println("║           GESTIÓN DE USUARIOS 👤               ║")
-    println("╚════════════════════════════════════════════════╝")
+    println("╚═══════════════════════════════════════════════╝")
     println("1. Crear nuevo usuario")
     println("2. Seleccionar usuario existente")
     println("3. Ver todos los usuarios")
@@ -123,9 +123,9 @@ fun menuGestionUsuarios(
  * Submenú: Gestión de Materiales
  */
 fun menuGestionMateriales(materiales: MutableList<MaterialReciclable>, scanner: Scanner) {
-    println("\n╔════════════════════════════════════════════════╗")
+    println("\n╔═══════════════════════════════════════════════╗")
     println("║         GESTIÓN DE MATERIALES 📦               ║")
-    println("╚════════════════════════════════════════════════╝")
+    println("╚═══════════════════════════════════════════════╝")
     println("1. Crear nuevo material")
     println("2. Ver materiales registrados")
     println("3. Volver al menú principal")
@@ -143,9 +143,9 @@ fun menuGestionMateriales(materiales: MutableList<MaterialReciclable>, scanner: 
  * Submenú: Gestión de Puntos de Reciclaje
  */
 fun menuGestionPuntos(puntos: MutableList<PuntoDeReciclaje>, scanner: Scanner) {
-    println("\n╔════════════════════════════════════════════════╗")
+    println("\n╔═══════════════════════════════════════════════╗")
     println("║      GESTIÓN DE PUNTOS DE RECICLAJE 📍        ║")
-    println("╚════════════════════════════════════════════════╝")
+    println("╚═══════════════════════════════════════════════╝")
     println("1. Crear nuevo punto de reciclaje")
     println("2. Ver puntos de reciclaje")
     println("3. Ver historial de un punto")
@@ -172,9 +172,9 @@ fun registrarReciclaje(
     puntos: List<PuntoDeReciclaje>,
     scanner: Scanner
 ) {
-    println("\n╔════════════════════════════════════════════════╗")
+    println("\n╔═══════════════════════════════════════════════╗")
     println("║          REGISTRAR RECICLAJE ♻️                ║")
-    println("╚════════════════════════════════════════════════╝")
+    println("╚═══════════════════════════════════════════════╝")
 
     if (usuarioActual == null) {
         println("❌ Error: No hay usuario seleccionado")
@@ -205,9 +205,9 @@ fun menuConsultas(
     puntos: List<PuntoDeReciclaje>,
     scanner: Scanner
 ) {
-    println("\n╔════════════════════════════════════════════════╗")
+    println("\n╔═══════════════════════════════════════════════╗")
     println("║        CONSULTAS E INFORMES 📊                 ║")
-    println("╚════════════════════════════════════════════════╝")
+    println("╚═══════════════════════════════════════════════╝")
     println("1. Ver mis puntos")
     println("2. Ver mi perfil completo")
     println("3. Ver mi historial de reciclajes")
@@ -290,16 +290,16 @@ fun verEstadisticasPunto(puntos: List<PuntoDeReciclaje>, scanner: Scanner) {
 
     if (punto != null) {
         val stats = GestorDeReciclaje.calcularEstadisticasPunto(punto)
-        println("\n═══════════════════════════════════════")
+        println("\n╔════════════════════════════════════════╗")
         println("  ESTADÍSTICAS: ${punto.nombre}")
-        println("═══════════════════════════════════════")
+        println("╚════════════════════════════════════════╝")
         println("📍 Dirección: ${punto.direccion}")
         println("📦 Materiales aceptados: ${punto.materialesAceptados}")
         println("\n📊 Estadísticas:")
         println("  • Total de reciclajes recibidos: ${stats.totalReciclajes}")
         println("  • Total de kg recibidos: ${"%.2f".format(stats.totalKgRecibidos)} kg")
         println("  • Usuarios únicos: ${stats.usuariosUnicos}")
-        println("═══════════════════════════════════════")
+        println("╚════════════════════════════════════════╝")
     } else {
         println("\n❌ Punto no válido")
     }
@@ -326,9 +326,9 @@ fun salirDeLaAplicacion(
     puntos: List<PuntoDeReciclaje>,
     scanner: Scanner
 ): Boolean {
-    println("\n╔════════════════════════════════════════════════╗")
+    println("\n╔═══════════════════════════════════════════════╗")
     println("║              SALIR DEL SISTEMA                 ║")
-    println("╚════════════════════════════════════════════════╝")
+    println("╚═══════════════════════════════════════════════╝")
 
     print("¿Deseas guardar los cambios antes de salir? (S/N): ")
     val respuesta = scanner.nextLine().trim().uppercase()
@@ -344,11 +344,11 @@ fun salirDeLaAplicacion(
         println("\n⚠️  Cambios descartados")
     }
 
-    println("\n╔════════════════════════════════════════════════╗")
+    println("\n╔═══════════════════════════════════════════════╗")
     println("║  ¡Gracias por usar el sistema de reciclaje!   ║")
     println("║              🌍 ♻️ 🌱                          ║")
     println("║     Juntos construimos un mundo mejor         ║")
-    println("╚════════════════════════════════════════════════╝\n")
+    println("╚═══════════════════════════════════════════════╝\n")
 
     scanner.close()
     return false  // Retorna false para terminar el bucle

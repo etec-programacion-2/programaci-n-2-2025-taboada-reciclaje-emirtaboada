@@ -1,0 +1,14 @@
+[
+  {
+    "nombre": "Acero",
+    "descripcion": "aleación de hierro y carbono, resistente, durable y fácil de moldear.",
+    "tipo": "METAL",
+    "pesoKg": 8.0
+  },
+  {
+    "nombre": "Plastico de botella",
+    "descripcion": "son 10 botellas de plastico",
+    "tipo": "PLASTICO",
+    "pesoKg": 1.0
+  }
+]

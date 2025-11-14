@@ -26,12 +26,14 @@ import java.time.format.DateTimeFormatter
  *
  * ARCHIVOS GENERADOS:
  * - usuarios.json: Lista de usuarios con sus puntos
+ * - materiales.json: Lista de materiales reciclables creados
  * - puntos_reciclaje.json: Puntos de reciclaje con materiales aceptados
  * - registros.json: Historial completo de reciclajes
  */
 object GestorPersistencia {
 
     private const val ARCHIVO_USUARIOS = "usuarios.json"
+    private const val ARCHIVO_MATERIALES = "materiales.json"
     private const val ARCHIVO_PUNTOS = "puntos_reciclaje.json"
     private const val ARCHIVO_REGISTROS = "registros.json"
 
@@ -40,11 +42,13 @@ object GestorPersistencia {
      */
     fun guardarTodo(
         usuarios: List<Usuario>,
+        materiales: List<MaterialReciclable>,
         puntos: List<PuntoDeReciclaje>,
         registros: List<RegistroReciclaje>
     ) {
         try {
             guardarUsuarios(usuarios)
+            guardarMateriales(materiales)
             guardarPuntosReciclaje(puntos)
             guardarRegistros(registros)
             println("\n💾 Datos guardados exitosamente")
@@ -56,25 +60,27 @@ object GestorPersistencia {
 
     /**
      * Carga todos los datos desde archivos JSON
-     * Retorna una estructura con usuarios, puntos y registros
+     * Retorna una estructura con usuarios, materiales, puntos y registros
      */
     fun cargarTodo(): DatosCargados {
         try {
             val usuarios = cargarUsuarios()
+            val materiales = cargarMateriales()
             val puntos = cargarPuntosReciclaje()
-            val registros = cargarRegistros(usuarios, puntos)
+            val registros = cargarRegistros(usuarios, materiales, puntos)
 
-            if (usuarios.isNotEmpty() || puntos.isNotEmpty() || registros.isNotEmpty()) {
+            if (usuarios.isNotEmpty() || materiales.isNotEmpty() || puntos.isNotEmpty() || registros.isNotEmpty()) {
                 println("\n📂 Datos cargados exitosamente:")
                 println("   • ${usuarios.size} usuarios")
+                println("   • ${materiales.size} materiales")
                 println("   • ${puntos.size} puntos de reciclaje")
                 println("   • ${registros.size} registros")
             }
 
-            return DatosCargados(usuarios, puntos, registros)
+            return DatosCargados(usuarios, materiales, puntos, registros)
         } catch (e: Exception) {
             println("\n⚠️ No se pudieron cargar datos previos (archivos no encontrados o corruptos)")
-            return DatosCargados(emptyList(), emptyList(), emptyList())
+            return DatosCargados(emptyList(), emptyList(), emptyList(), emptyList())
         }
     }
 
@@ -124,6 +130,60 @@ object GestorPersistencia {
         }
 
         return usuarios
+    }
+
+    /**
+     * SERIALIZACIÓN DE MATERIALES
+     * Convierte la lista de materiales a formato JSON manual
+     */
+    private fun guardarMateriales(materiales: List<MaterialReciclable>) {
+        val json = buildString {
+            appendLine("[")
+            materiales.forEachIndexed { index, material ->
+                appendLine("  {")
+                appendLine("    \"nombre\": \"${escaparJson(material.nombre)}\",")
+                appendLine("    \"descripcion\": \"${escaparJson(material.descripcion)}\",")
+                appendLine("    \"tipo\": \"${material.tipo}\",")
+                appendLine("    \"pesoKg\": ${material.pesoKg}")
+                append("  }")
+                if (index < materiales.size - 1) appendLine(",")
+                else appendLine()
+            }
+            append("]")
+        }
+
+        File(ARCHIVO_MATERIALES).writeText(json)
+    }
+
+    /**
+     * DESERIALIZACIÓN DE MATERIALES
+     * Lee el archivo JSON y reconstruye los objetos MaterialReciclable
+     */
+    private fun cargarMateriales(): MutableList<MaterialReciclable> {
+        val file = File(ARCHIVO_MATERIALES)
+        if (!file.exists()) return mutableListOf()
+
+        val materiales = mutableListOf<MaterialReciclable>()
+        val contenido = file.readText()
+
+        val objetos = extraerObjetosJson(contenido)
+        objetos.forEach { obj ->
+            val nombre = extraerValorJson(obj, "nombre")
+            val descripcion = extraerValorJson(obj, "descripcion")
+            val tipoStr = extraerValorJson(obj, "tipo")
+            val pesoKg = extraerValorJson(obj, "pesoKg").toDoubleOrNull() ?: 0.0
+
+            if (nombre.isNotEmpty() && tipoStr.isNotEmpty()) {
+                try {
+                    val tipo = TipoMaterial.valueOf(tipoStr)
+                    materiales.add(MaterialReciclable(nombre, descripcion, tipo, pesoKg))
+                } catch (e: Exception) {
+                    println("⚠️ Error al cargar material: ${e.message}")
+                }
+            }
+        }
+
+        return materiales
     }
 
     /**
@@ -186,7 +246,7 @@ object GestorPersistencia {
 
     /**
      * SERIALIZACIÓN DE REGISTROS
-     * Guarda referencias a usuarios y puntos por nombre/email
+     * Guarda referencias a usuarios, materiales y puntos por identificadores únicos
      */
     private fun guardarRegistros(registros: List<RegistroReciclaje>) {
         val json = buildString {
@@ -213,10 +273,11 @@ object GestorPersistencia {
 
     /**
      * DESERIALIZACIÓN DE REGISTROS
-     * Reconstruye las relaciones con usuarios y puntos existentes
+     * Reconstruye las relaciones con usuarios, materiales y puntos existentes
      */
     private fun cargarRegistros(
         usuarios: List<Usuario>,
+        materiales: List<MaterialReciclable>,
         puntos: List<PuntoDeReciclaje>
     ): List<RegistroReciclaje> {
         val file = File(ARCHIVO_REGISTROS)
@@ -244,12 +305,10 @@ object GestorPersistencia {
                 val fecha = LocalDateTime.parse(fechaStr, DateTimeFormatter.ISO_LOCAL_DATE_TIME)
 
                 if (usuario != null && punto != null) {
-                    val material = MaterialReciclable(
-                        materialNombre,
-                        materialDesc,
-                        materialTipo,
-                        materialPeso
-                    )
+                    // Buscar si existe el material en la lista cargada, si no, crearlo
+                    val material = materiales.find {
+                        it.nombre == materialNombre && it.tipo == materialTipo
+                    } ?: MaterialReciclable(materialNombre, materialDesc, materialTipo, materialPeso)
 
                     registros.add(RegistroReciclaje(usuario, material, punto, cantidad, fecha))
                 }
@@ -330,6 +389,7 @@ object GestorPersistencia {
      */
     fun existenDatosPrevios(): Boolean {
         return File(ARCHIVO_USUARIOS).exists() ||
+                File(ARCHIVO_MATERIALES).exists() ||
                 File(ARCHIVO_PUNTOS).exists() ||
                 File(ARCHIVO_REGISTROS).exists()
     }
@@ -340,6 +400,7 @@ object GestorPersistencia {
  */
 data class DatosCargados(
     val usuarios: List<Usuario>,
+    val materiales: List<MaterialReciclable>,
     val puntos: List<PuntoDeReciclaje>,
     val registros: List<RegistroReciclaje>
 )

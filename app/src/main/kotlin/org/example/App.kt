@@ -8,47 +8,81 @@ import java.util.Scanner
  */
 fun main() {
     val scanner = Scanner(System.`in`)
-
-    // ✅ CARGAR DATOS AL INICIAR (Persistencia)
-    println("📄 Iniciando sistema...")
-    val datosCargados = GestorPersistencia.cargarTodo()
-    val materiales = mutableListOf<MaterialReciclable>()
-    val puntosReciclaje = datosCargados.puntos.toMutableList()
-    val usuarios = datosCargados.usuarios.toMutableList()
+    val sistemaDatos = inicializarSistema()
     var usuarioActual: Usuario? = null
 
-    // Restaurar registros en el repositorio
+    while (true) {
+        mostrarMenuPrincipal(usuarioActual)
+        val opcion = leerEntero(scanner)
+
+        if (!procesarOpcion(opcion, sistemaDatos, scanner, usuarioActual) { usuarioActual = it }) {
+            break // Salir del bucle
+        }
+
+        pausarPantalla(scanner, opcion)
+    }
+}
+
+/**
+ * Inicializa el sistema cargando datos persistidos
+ */
+private fun inicializarSistema(): SistemaDatos {
+    println("🔄 Iniciando sistema...")
+    val datosCargados = GestorPersistencia.cargarTodo()
+
     datosCargados.registros.forEach { RepositorioRegistros.agregar(it) }
 
     println("✅ Sistema listo\n")
 
-    // ✅ BUCLE PRINCIPAL - La aplicación no se cierra hasta seleccionar "Salir"
-    var continuar = true
-    while (continuar) {
-        mostrarMenuPrincipal(usuarioActual)
+    return SistemaDatos(
+        materiales = datosCargados.materiales.toMutableList(),
+        puntosReciclaje = datosCargados.puntos.toMutableList(),
+        usuarios = datosCargados.usuarios.toMutableList()
+    )
+}
 
-        print("➤ Selecciona una opción: ")
-        val opcion = leerEntero(scanner)
-
-        when (opcion) {
-            1 -> menuGestionUsuarios(usuarios, scanner, usuarioActual) { usuarioActual = it }
-            2 -> menuGestionMateriales(materiales, scanner)
-            3 -> menuGestionPuntos(puntosReciclaje, scanner)
-            4 -> registrarReciclaje(usuarioActual, materiales, puntosReciclaje, scanner)
-            5 -> menuConsultas(usuarioActual, puntosReciclaje, scanner)
-            6 -> verTablaDePuntos()
-            7 -> guardarDatosManualmente(usuarios, puntosReciclaje)
-            8 -> continuar = salirDeLaAplicacion(usuarios, puntosReciclaje, scanner)
-            else -> println("\n❌ Opción inválida. Por favor, selecciona un número del 1 al 8.\n")
-        }
-
-        // Pausa para que el usuario pueda leer el resultado
-        if (continuar && opcion in 1..8) {
-            print("\nPresiona ENTER para continuar...")
-            scanner.nextLine()
-        }
+/**
+ * Procesa la opción seleccionada por el usuario
+ * @return false si debe salir, true si debe continuar
+ */
+private fun procesarOpcion(
+    opcion: Int,
+    datos: SistemaDatos,
+    scanner: Scanner,
+    usuarioActual: Usuario?,
+    actualizarUsuario: (Usuario) -> Unit
+): Boolean {
+    return when (opcion) {
+        1 -> { menuGestionUsuarios(datos.usuarios, scanner, usuarioActual, actualizarUsuario); true }
+        2 -> { menuGestionMateriales(datos.materiales, scanner); true }
+        3 -> { menuGestionPuntos(datos.puntosReciclaje, scanner); true }
+        4 -> { registrarReciclaje(usuarioActual, datos.materiales, datos.puntosReciclaje, scanner); true }
+        5 -> { menuConsultas(usuarioActual, datos.puntosReciclaje, scanner); true }
+        6 -> { verTablaDePuntos(); true }
+        7 -> { guardarDatosManualmente(datos.usuarios, datos.materiales, datos.puntosReciclaje); true }
+        8 -> salirDeLaAplicacion(datos.usuarios, datos.materiales, datos.puntosReciclaje, scanner)
+        else -> { println("\n❌ Opción inválida. Por favor, selecciona un número del 1 al 8.\n"); true }
     }
 }
+
+/**
+ * Pausa la pantalla para que el usuario pueda leer
+ */
+private fun pausarPantalla(scanner: Scanner, opcion: Int) {
+    if (opcion in 1..8) {
+        print("\nPresiona ENTER para continuar...")
+        scanner.nextLine()
+    }
+}
+
+/**
+ * Clase para encapsular los datos del sistema
+ */
+data class SistemaDatos(
+    val materiales: MutableList<MaterialReciclable>,
+    val puntosReciclaje: MutableList<PuntoDeReciclaje>,
+    val usuarios: MutableList<Usuario>
+)
 
 /**
  * Muestra el menú principal del sistema
@@ -64,9 +98,9 @@ fun mostrarMenuPrincipal(usuarioActual: Usuario?) {
         println("⚠️  No hay usuario seleccionado")
     }
 
-    println("\n┌─────────────────────────────────────────────────┐")
+    println("\n┌───────────────────────────────────────────────┐")
     println("│  MENÚ PRINCIPAL                                 │")
-    println("├─────────────────────────────────────────────────┤")
+    println("├───────────────────────────────────────────────┤")
     println("│  1. 👤 Gestión de Usuarios                      │")
     println("│  2. 📦 Gestión de Materiales                    │")
     println("│  3. 📍 Gestión de Puntos de Reciclaje          │")
@@ -75,7 +109,7 @@ fun mostrarMenuPrincipal(usuarioActual: Usuario?) {
     println("│  6. 💰 Ver Tabla de Puntos                      │")
     println("│  7. 💾 Guardar Datos                            │")
     println("│  8. 🚪 Salir                                    │")
-    println("└─────────────────────────────────────────────────┘")
+    println("└───────────────────────────────────────────────┘")
 }
 
 /**
@@ -290,16 +324,16 @@ fun verEstadisticasPunto(puntos: List<PuntoDeReciclaje>, scanner: Scanner) {
 
     if (punto != null) {
         val stats = GestorDeReciclaje.calcularEstadisticasPunto(punto)
-        println("\n╔════════════════════════════════════════╗")
+        println("\n╔═══════════════════════════════════════╗")
         println("  ESTADÍSTICAS: ${punto.nombre}")
-        println("╚════════════════════════════════════════╝")
+        println("╚═══════════════════════════════════════╝")
         println("📍 Dirección: ${punto.direccion}")
         println("📦 Materiales aceptados: ${punto.materialesAceptados}")
         println("\n📊 Estadísticas:")
         println("  • Total de reciclajes recibidos: ${stats.totalReciclajes}")
         println("  • Total de kg recibidos: ${"%.2f".format(stats.totalKgRecibidos)} kg")
         println("  • Usuarios únicos: ${stats.usuariosUnicos}")
-        println("╚════════════════════════════════════════╝")
+        println("╚═══════════════════════════════════════╝")
     } else {
         println("\n❌ Punto no válido")
     }
@@ -308,12 +342,17 @@ fun verEstadisticasPunto(puntos: List<PuntoDeReciclaje>, scanner: Scanner) {
 /**
  * Guarda los datos manualmente
  */
-fun guardarDatosManualmente(usuarios: List<Usuario>, puntos: List<PuntoDeReciclaje>) {
+fun guardarDatosManualmente(
+    usuarios: List<Usuario>,
+    materiales: List<MaterialReciclable>,
+    puntos: List<PuntoDeReciclaje>
+) {
     println("\n💾 Guardando datos...")
     GestorPersistencia.guardarTodo(
-        usuarios = usuarios,
-        puntos = puntos,
-        registros = RepositorioRegistros.obtenerTodos()
+        usuarios,
+        materiales,
+        puntos,
+        RepositorioRegistros.obtenerTodos()
     )
 }
 
@@ -323,6 +362,7 @@ fun guardarDatosManualmente(usuarios: List<Usuario>, puntos: List<PuntoDeRecicla
  */
 fun salirDeLaAplicacion(
     usuarios: List<Usuario>,
+    materiales: List<MaterialReciclable>,
     puntos: List<PuntoDeReciclaje>,
     scanner: Scanner
 ): Boolean {
@@ -335,9 +375,10 @@ fun salirDeLaAplicacion(
 
     if (respuesta == "S" || respuesta == "SI" || respuesta == "Y" || respuesta == "YES") {
         GestorPersistencia.guardarTodo(
-            usuarios = usuarios,
-            puntos = puntos,
-            registros = RepositorioRegistros.obtenerTodos()
+            usuarios,
+            materiales,
+            puntos,
+            RepositorioRegistros.obtenerTodos()
         )
         println("\n💾 Datos guardados exitosamente")
     } else {

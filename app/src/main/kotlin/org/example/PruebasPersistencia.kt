@@ -26,7 +26,7 @@ fun main() {
             Usuario("Test User 2", "test2@mail.com", 100)
         )
 
-        GestorPersistencia.guardarTodo(usuarios, emptyList(), emptyList())
+        GestorPersistencia.guardarTodo(usuarios, emptyList(), emptyList(), emptyList())
         val datos = GestorPersistencia.cargarTodo()
 
         assert(datos.usuarios.size == 2) { "Debe cargar 2 usuarios" }
@@ -54,7 +54,7 @@ fun main() {
             PuntoDeReciclaje("Punto 2", "Dirección 2", listOf(TipoMaterial.METAL))
         )
 
-        GestorPersistencia.guardarTodo(emptyList(), puntos, emptyList())
+        GestorPersistencia.guardarTodo(emptyList(), emptyList(), puntos, emptyList())
         val datos = GestorPersistencia.cargarTodo()
 
         assert(datos.puntos.size == 2) { "Debe cargar 2 puntos" }
@@ -71,9 +71,37 @@ fun main() {
         println("❌ ERROR - ${e.message}\n")
     }
 
-    // Test 3: Guardar y cargar registros con relaciones
+    // Test 3: Guardar y cargar materiales
     testsTotales++
-    println("Test 3: Guardar y cargar registros con relaciones")
+    println("Test 3: Guardar y cargar materiales")
+    try {
+        limpiarArchivos()
+
+        val materiales = listOf(
+            MaterialReciclable("Botella PET", "Plástico reciclable", TipoMaterial.PLASTICO, 0.5),
+            MaterialReciclable("Lata de Aluminio", "Metal reciclable", TipoMaterial.METAL, 0.2)
+        )
+
+        GestorPersistencia.guardarTodo(emptyList(), materiales, emptyList(), emptyList())
+        val datos = GestorPersistencia.cargarTodo()
+
+        assert(datos.materiales.size == 2) { "Debe cargar 2 materiales" }
+        assert(datos.materiales[0].nombre == "Botella PET") { "Nombre correcto" }
+        assert(datos.materiales[0].tipo == TipoMaterial.PLASTICO) { "Tipo correcto" }
+        assert(datos.materiales[0].pesoKg == 0.5) { "Peso correcto" }
+        assert(datos.materiales[1].tipo == TipoMaterial.METAL) { "Tipo METAL correcto" }
+
+        println("✅ PASÓ - Materiales guardados y cargados correctamente\n")
+        testsPasados++
+    } catch (e: AssertionError) {
+        println("❌ FALLÓ - ${e.message}\n")
+    } catch (e: Exception) {
+        println("❌ ERROR - ${e.message}\n")
+    }
+
+    // Test 4: Guardar y cargar registros con relaciones
+    testsTotales++
+    println("Test 4: Guardar y cargar registros con relaciones")
     try {
         limpiarArchivos()
         RepositorioRegistros.limpiar()
@@ -87,6 +115,7 @@ fun main() {
 
         GestorPersistencia.guardarTodo(
             listOf(usuario),
+            listOf(material),
             listOf(punto),
             RepositorioRegistros.obtenerTodos()
         )
@@ -108,14 +137,14 @@ fun main() {
         e.printStackTrace()
     }
 
-    // Test 4: Verificar archivos JSON se crean correctamente
+    // Test 5: Verificar archivos JSON se crean correctamente
     testsTotales++
-    println("Test 4: Verificar creación de archivos JSON")
+    println("Test 5: Verificar creación de archivos JSON")
     try {
         limpiarArchivos()
 
         val usuario = Usuario("Test", "test@mail.com", 50)
-        GestorPersistencia.guardarTodo(listOf(usuario), emptyList(), emptyList())
+        GestorPersistencia.guardarTodo(listOf(usuario), emptyList(), emptyList(), emptyList())
 
         val archivo = File("usuarios.json")
         assert(archivo.exists()) { "Archivo usuarios.json debe existir" }
@@ -133,14 +162,14 @@ fun main() {
         println("❌ ERROR - ${e.message}\n")
     }
 
-    // Test 5: Manejo de caracteres especiales
+    // Test 6: Manejo de caracteres especiales
     testsTotales++
-    println("Test 5: Escape de caracteres especiales")
+    println("Test 6: Escape de caracteres especiales")
     try {
         limpiarArchivos()
 
         val usuario = Usuario("Juan \"El Reciclador\"", "juan@mail.com", 50)
-        GestorPersistencia.guardarTodo(listOf(usuario), emptyList(), emptyList())
+        GestorPersistencia.guardarTodo(listOf(usuario), emptyList(), emptyList(), emptyList())
 
         val datos = GestorPersistencia.cargarTodo()
         assert(datos.usuarios[0].nombre == "Juan \"El Reciclador\"") { "Comillas escapadas correctamente" }
@@ -153,14 +182,15 @@ fun main() {
         println("❌ ERROR - ${e.message}\n")
     }
 
-    // Test 6: Cargar con archivos inexistentes
+    // Test 7: Cargar con archivos inexistentes
     testsTotales++
-    println("Test 6: Comportamiento con archivos inexistentes")
+    println("Test 7: Comportamiento con archivos inexistentes")
     try {
         limpiarArchivos()
 
         val datos = GestorPersistencia.cargarTodo()
         assert(datos.usuarios.isEmpty()) { "Usuarios vacío" }
+        assert(datos.materiales.isEmpty()) { "Materiales vacío" }
         assert(datos.puntos.isEmpty()) { "Puntos vacío" }
         assert(datos.registros.isEmpty()) { "Registros vacío" }
 
@@ -172,14 +202,14 @@ fun main() {
         println("❌ ERROR - ${e.message}\n")
     }
 
-    // Test 7: Múltiples guardar/cargar no duplican datos
+    // Test 8: Múltiples guardar/cargar no duplican datos
     testsTotales++
-    println("Test 7: Múltiples guardados/cargados")
+    println("Test 8: Múltiples guardados/cargados")
     try {
         limpiarArchivos()
 
         val usuario = Usuario("Test", "test@mail.com", 100)
-        GestorPersistencia.guardarTodo(listOf(usuario), emptyList(), emptyList())
+        GestorPersistencia.guardarTodo(listOf(usuario), emptyList(), emptyList(), emptyList())
 
         val datos1 = GestorPersistencia.cargarTodo()
         assert(datos1.usuarios.size == 1) { "Primera carga: 1 usuario" }
@@ -196,9 +226,9 @@ fun main() {
         println("❌ ERROR - ${e.message}\n")
     }
 
-    // Test 8: Persistencia mantiene puntos acumulados
+    // Test 9: Persistencia mantiene puntos acumulados
     testsTotales++
-    println("Test 8: Puntos se mantienen después de guardar/cargar")
+    println("Test 9: Puntos se mantienen después de guardar/cargar")
     try {
         limpiarArchivos()
         RepositorioRegistros.limpiar()
@@ -214,6 +244,7 @@ fun main() {
         // Guardar
         GestorPersistencia.guardarTodo(
             listOf(usuario),
+            listOf(material),
             listOf(punto),
             RepositorioRegistros.obtenerTodos()
         )
@@ -239,9 +270,9 @@ fun main() {
         e.printStackTrace()
     }
 
-    // Test 9: Formato de fecha ISO
+    // Test 10: Formato de fecha ISO
     testsTotales++
-    println("Test 9: Fechas en formato ISO correcto")
+    println("Test 10: Fechas en formato ISO correcto")
     try {
         limpiarArchivos()
         RepositorioRegistros.limpiar()
@@ -253,6 +284,7 @@ fun main() {
         GestorDeReciclaje.registrarReciclaje(usuario, material, punto, 1.0)
         GestorPersistencia.guardarTodo(
             listOf(usuario),
+            listOf(material),
             listOf(punto),
             RepositorioRegistros.obtenerTodos()
         )
@@ -272,9 +304,9 @@ fun main() {
         println("❌ ERROR - ${e.message}\n")
     }
 
-    // Test 10: Integración completa
+    // Test 11: Integración completa
     testsTotales++
-    println("Test 10: Integración completa del sistema")
+    println("Test 11: Integración completa del sistema")
     try {
         limpiarArchivos()
         RepositorioRegistros.limpiar()
@@ -288,16 +320,18 @@ fun main() {
             PuntoDeReciclaje("P1", "Dir1", listOf(TipoMaterial.PLASTICO)),
             PuntoDeReciclaje("P2", "Dir2", listOf(TipoMaterial.VIDRIO))
         )
-        val material1 = MaterialReciclable("M1", "D1", TipoMaterial.PLASTICO, 1.0)
-        val material2 = MaterialReciclable("M2", "D2", TipoMaterial.VIDRIO, 1.0)
+        val materiales = mutableListOf(
+            MaterialReciclable("M1", "D1", TipoMaterial.PLASTICO, 1.0),
+            MaterialReciclable("M2", "D2", TipoMaterial.VIDRIO, 1.0)
+        )
 
         // Realizar reciclajes
-        GestorDeReciclaje.registrarReciclaje(usuarios[0], material1, puntos[0], 1.0)
-        GestorDeReciclaje.registrarReciclaje(usuarios[1], material2, puntos[1], 1.0)
-        GestorDeReciclaje.registrarReciclaje(usuarios[0], material1, puntos[0], 2.0)
+        GestorDeReciclaje.registrarReciclaje(usuarios[0], materiales[0], puntos[0], 1.0)
+        GestorDeReciclaje.registrarReciclaje(usuarios[1], materiales[1], puntos[1], 1.0)
+        GestorDeReciclaje.registrarReciclaje(usuarios[0], materiales[0], puntos[0], 2.0)
 
         // Guardar todo
-        GestorPersistencia.guardarTodo(usuarios, puntos, RepositorioRegistros.obtenerTodos())
+        GestorPersistencia.guardarTodo(usuarios, materiales, puntos, RepositorioRegistros.obtenerTodos())
 
         // Limpiar y recargar
         RepositorioRegistros.limpiar()
@@ -305,6 +339,7 @@ fun main() {
 
         // Verificaciones finales
         assert(datos.usuarios.size == 2) { "2 usuarios" }
+        assert(datos.materiales.size == 2) { "2 materiales" }
         assert(datos.puntos.size == 2) { "2 puntos" }
         assert(datos.registros.size == 3) { "3 registros" }
         assert(datos.usuarios[0].puntos == 15) { "User1: 15 puntos (5+10)" }
@@ -344,6 +379,7 @@ fun main() {
  */
 private fun limpiarArchivos() {
     File("usuarios.json").delete()
+    File("materiales.json").delete()
     File("puntos_reciclaje.json").delete()
     File("registros.json").delete()
 }

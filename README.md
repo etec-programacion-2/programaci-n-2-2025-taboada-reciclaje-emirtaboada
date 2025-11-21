@@ -357,69 +357,360 @@ application {
 
 ---
 
-## 📊 Ejemplo de Uso
+### **1. Gestión de Usuarios (Opción 1)**
+
+#### **Submenú:**
+1. Crear nuevo usuario
+2. Seleccionar usuario existente
+3. Ver todos los usuarios
+4. Ver mi perfil
+5. Volver al menú principal
+
+#### **1.1 Crear Nuevo Usuario**
+
+**Proceso:**
+1. Ingresa tu nombre
+2. Ingresa tu email (debe ser único)
+3. El usuario se crea con 0 puntos iniciales
+4. Automáticamente queda seleccionado como usuario activo
+
+**Ejemplo:**
+```
+Nombre: María González
+Email: maria@email.com
+
+✅ Usuario creado exitosamente
+```
+
+#### **1.2 Seleccionar Usuario Existente**
+
+Lista todos los usuarios registrados con sus puntos acumulados y te permite seleccionar uno como usuario activo.
+
+#### **1.3 Ver Perfil de Usuario**
+
+Muestra información completa del usuario activo:
+- Nombre y email
+- Puntos acumulados
+- Nivel actual (Principiante, Intermedio, Avanzado, Experto)
+- Estadísticas personales:
+  - Total de reciclajes realizados
+  - Kilos totales reciclados
+  - Desglose por tipo de material
+
+**Sistema de Niveles:**
+- 🌱 **Principiante**: 0-49 puntos
+- 🌿 **Intermedio**: 50-149 puntos
+- 🌳 **Avanzado**: 150-299 puntos
+- 🏆 **Experto**: 300+ puntos
+
+---
+
+### **2. Gestión de Materiales (Opción 2)**
+
+#### **Submenú:**
+1. Crear nuevo material
+2. Ver materiales registrados
+3. Volver al menú principal
+
+#### **2.1 Crear Material Reciclable**
+
+**Pasos:**
+1. Ingresa el nombre del material (ej: "Botellas PET")
+2. Ingresa una descripción (ej: "Botellas plásticas de bebidas")
+3. Selecciona el tipo de material:
+   - **PLASTICO** - 5 puntos/kg
+   - **METAL** - 4 puntos/kg
+   - **VIDRIO** - 3 puntos/kg
+   - **PAPEL** - 2 puntos/kg
+   - **ORGANICO** - 1 punto/kg
+4. Ingresa el peso en kilogramos
+
+**El sistema mostrará:**
+- Confirmación de creación
+- Puntos potenciales
+- Impacto ambiental (tiempo de degradación)
+- Categoría según peso (Ligero/Medio/Pesado)
+
+**Ejemplo:**
+```
+Nombre: Latas de aluminio
+Descripción: Latas de bebidas vacías
+Tipo: 4 (METAL)
+Peso: 0.5 kg
+
+✅ Material creado exitosamente
+💰 Puntos potenciales: 2 puntos
+🌍 Impacto ambiental: 25.0 (escala de degradación)
+📊 Categoría: Metal - Ligero
+```
+
+#### **2.2 Ver Materiales Registrados**
+
+Lista todos los materiales con:
+- Nombre, tipo y descripción
+- Peso y puntos potenciales
+- Impacto ambiental
+- Categoría
+
+---
+
+### **3. Gestión de Puntos de Reciclaje (Opción 3)**
+
+#### **Submenú:**
+1. Crear nuevo punto de reciclaje
+2. Ver puntos de reciclaje
+3. Ver historial de un punto
+4. Ver estadísticas de un punto
+5. Volver al menú principal
+
+#### **3.1 Crear Punto de Reciclaje**
+
+**Pasos:**
+1. Ingresa el nombre del punto (ej: "EcoPunto Centro")
+2. Ingresa la dirección completa
+3. Selecciona los materiales aceptados (puedes elegir varios separados por comas)
+
+**Ejemplo:**
+```
+Nombre: EcoEstación Norte
+Dirección: Av. Argentina 456, Neuquén
+Selecciona materiales aceptados (ej: 1,2,3):
+1. PLASTICO
+2. VIDRIO
+3. PAPEL
+4. METAL
+5. ORGANICO
+
+Selección: 1,3,4
+
+✅ Punto creado exitosamente
+Acepta: PLASTICO, PAPEL, METAL
+```
+
+#### **3.2 Ver Puntos de Reciclaje**
+
+Muestra todos los puntos registrados con sus direcciones y materiales aceptados.
+
+#### **3.3 Ver Historial de un Punto**
+
+Muestra todos los materiales recibidos por el punto seleccionado:
+- Lista de materiales con cantidades
+- Total de kilogramos recibidos
+
+#### **3.4 Ver Estadísticas de un Punto**
+
+Dashboard completo del punto:
+- Dirección y materiales aceptados
+- Total de reciclajes recibidos
+- Total de kg recibidos
+- Número de usuarios únicos que lo utilizaron
+
+---
+
+### **4. Registrar Reciclaje (Opción 4) ⭐ FUNCIÓN PRINCIPAL**
+
+Esta es la operación central del sistema.
+
+#### **Requisitos Previos:**
+✅ Tener un usuario seleccionado (opción 1)  
+✅ Tener materiales creados (opción 2)  
+✅ Tener puntos de reciclaje creados (opción 3)
+
+#### **Proceso de Reciclaje:**
+
+1. **Selección de Material**
+   - El sistema muestra todos los materiales disponibles
+   - Elige el número del material a reciclar
+
+2. **Selección de Punto de Reciclaje**
+   - El sistema muestra todos los puntos disponibles
+   - Elige el punto donde realizarás el reciclaje
+
+3. **Validación Automática**
+   - El sistema verifica que el punto acepte ese tipo de material
+   - Valida que la cantidad sea positiva
+
+4. **Ingreso de Cantidad**
+   - Ingresa los kilogramos a reciclar
+   - Puedes presionar Enter para usar el peso predeterminado del material
+
+5. **Procesamiento y Resultado**
+   - El sistema calcula los puntos ganados
+   - Actualiza tu perfil
+   - Registra la transacción
+   - Actualiza el historial del punto
+
+#### **Cálculo de Puntos:**
 
 ```
-SISTEMA DE RECICLAJE INTERACTIVO 🌱
+Puntos Ganados = Cantidad (kg) × Factor del Material
 
-👤 Usuario: Juan (15 pts)
+Factores:
+- PLASTICO: 5 puntos/kg
+- METAL: 4 puntos/kg
+- VIDRIO: 3 puntos/kg
+- PAPEL: 2 puntos/kg
+- ORGANICO: 1 punto/kg
+```
 
-MENÚ PRINCIPAL
-1. 👤 Gestión de Usuarios
-2. 📦 Gestión de Materiales
-3. 📍 Gestión de Puntos de Reciclaje
-4. ♻️  Registrar Reciclaje
-5. 📊 Consultas e Informes
-6. 💰 Ver Tabla de Puntos
-7. 💾 Guardar Datos
-8. 🚪 Salir
+#### **Ejemplo Completo:**
 
-➤ Opción: 4
+```
+--- RECICLAR MATERIAL ---
 
---- REGISTRAR RECICLAJE ---
-Material: Botella PET (PLASTICO) - 1.0 kg
-Punto: EcoPunto Centro
+Materiales disponibles:
+1. Botellas PET (PLASTICO) - 0.5 kg
+2. Latas de aluminio (METAL) - 0.5 kg
+3. Diarios viejos (PAPEL) - 2.0 kg
+
+Selecciona el material: 1
+
+Puntos de reciclaje disponibles:
+1. EcoPunto Centro - Acepta: [PLASTICO, VIDRIO, PAPEL]
+2. EcoEstación Norte - Acepta: [PLASTICO, METAL]
+
+Selecciona el punto de reciclaje: 1
+
+Cantidad a reciclar (kg) [0.5]: 3.5
 
 ✅ ¡Reciclaje exitoso!
-🌟 Ganaste 5 puntos
-📊 Puntos totales: 20
+María González recicló 3.50 kg de 'Botellas PET' en 'EcoPunto Centro'
+🌟 Ganaste 17 puntos (3.5 kg × 5 puntos/kg)
+📊 Puntos totales: 67
+```
+
+#### **Mensajes de Error Comunes:**
+
+| Error | Causa | Solución |
+|-------|-------|----------|
+| "No hay usuario seleccionado" | Falta activar un usuario | Ve a Opción 1 → Crear/Seleccionar usuario |
+| "No hay materiales disponibles" | No se crearon materiales | Ve a Opción 2 → Crear material |
+| "No hay puntos de reciclaje" | No se crearon puntos | Ve a Opción 3 → Crear punto |
+| "El punto no acepta este material" | Incompatibilidad | Verifica materiales aceptados del punto |
+| "La cantidad debe ser mayor a 0" | Cantidad inválida | Ingresa un número positivo |
+
+---
+
+### **5. Consultas e Informes (Opción 5)**
+
+#### **Submenú:**
+1. Ver mis puntos
+2. Ver mi perfil completo
+3. Ver mi historial de reciclajes
+4. Ver todos los registros del sistema
+5. Ver estadísticas generales
+6. Volver al menú principal
+
+#### **5.1 Ver Mis Puntos**
+
+Muestra rápidamente tu puntaje actual.
+
+#### **5.2 Ver Mi Perfil Completo**
+
+Igual que Opción 1.4 - Muestra perfil detallado con estadísticas.
+
+#### **5.3 Ver Mi Historial de Reciclajes**
+
+Muestra cada transacción realizada:
+- Material y cantidad reciclada
+- Punto de reciclaje utilizado
+- Fecha y hora exacta
+- Puntos ganados en cada operación
+
+**Ejemplo:**
+```
+╔═══════════════════════════════════════╗
+    HISTORIAL DE María González
+╚═══════════════════════════════════════╝
+
+Total de reciclajes: 3
+
+--- Registros ---
+
+#1
+┌─────────────────────────────────────────
+│ REGISTRO DE RECICLAJE
+├─────────────────────────────────────────
+│ Usuario: María González
+│ Material: Botellas PET (PLASTICO)
+│ Cantidad: 3.50 kg
+│ Punto: EcoPunto Centro
+│ Fecha: 21/11/2025 14:30:15
+│ Puntos ganados: 17
+└─────────────────────────────────────────
+```
+
+#### **5.4 Ver Todos los Registros del Sistema**
+
+Acceso completo al historial global:
+- Total de registros en el sistema
+- Total de kg reciclados
+- Total de puntos otorgados
+- Detalle de cada transacción
+
+#### **5.5 Ver Estadísticas Generales**
+
+Dashboard completo del sistema:
+
+```
+╔═══════════════════════════════════════════════╗
+║         ESTADÍSTICAS GENERALES               ║
+╚═══════════════════════════════════════════════╝
+
+📊 Resumen General:
+  • Total de reciclajes: 45
+  • Total de kg reciclados: 127.50 kg
+  • Usuarios activos: 8
+  • Puntos de reciclaje activos: 3
+
+📦 Por tipo de material:
+  • PLASTICO: 45.00 kg (15 reciclajes)
+  • VIDRIO: 32.50 kg (12 reciclajes)
+  • PAPEL: 28.00 kg (10 reciclajes)
+  • METAL: 18.00 kg (6 reciclajes)
+  • ORGANICO: 4.00 kg (2 reciclajes)
 ```
 
 ---
 
-## 👥 Contribución
+### **6. Ver Tabla de Puntos (Opción 6)**
 
-Las contribuciones son bienvenidas. Por favor:
+Muestra la tabla de conversión completa:
 
-1. Fork el proyecto
-2. Crea una rama para tu feature (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -m 'Agregar nueva funcionalidad'`)
-4. Push a la rama (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
+```
+╔═══════════════════════════════════════╗
+║    TABLA DE PUNTOS POR MATERIAL       ║
+╚═══════════════════════════════════════╝
 
----
-
-## 📝 Licencia
-
-Este proyecto es de código abierto y está disponible bajo la licencia MIT.
-
----
-
-## 📧 Contacto
-
-Para preguntas o sugerencias, por favor abre un Issue en el repositorio.
+Tipo de Material    | Puntos por kg
+--------------------|---------------
+PLASTICO            | 5
+VIDRIO              | 3
+PAPEL               | 2
+METAL               | 4
+ORGANICO            | 1
+```
 
 ---
 
-## 🎓 Créditos
+### **7. Guardar Datos (Opción 7)**
 
-Desarrollado como proyecto académico para demostrar:
-- Principios SOLID
-- Programación Orientada a Objetos
-- Herencia y Polimorfismo
-- Patrones de Diseño
-- Persistencia de Datos
+Guarda manualmente el estado actual del sistema en archivos JSON.
+
+**Nota:** Los datos también se guardan automáticamente al salir del sistema si lo confirmas.
 
 ---
+
+### **8. Salir (Opción 8)**
+
+Cierra la aplicación de forma segura:
+
+1. Pregunta si deseas guardar los cambios
+2. Si aceptas (S), guarda todo automáticamente
+3. Si rechazas (N), los cambios no guardados se pierden
+4. Muestra mensaje de despedida
+
+---
+
 
 ¡Gracias por usar el Sistema de Reciclaje Interactivo! 🌍♻️🌱

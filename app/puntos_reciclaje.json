@@ -3,5 +3,10 @@
     "nombre": "panxha",
     "direccion": "av sarmiento",
     "materialesAceptados": ["ORGANICO"]
+  },
+  {
+    "nombre": "pedriel",
+    "direccion": "terrada 123",
+    "materialesAceptados": ["PLASTICO"]
   }
 ]

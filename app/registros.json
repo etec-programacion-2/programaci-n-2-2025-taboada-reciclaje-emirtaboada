@@ -8,5 +8,15 @@
     "puntoNombre": "panxha",
     "cantidad": 3.0,
     "fecha": "2025-11-04T12:51:03.042394634"
+  },
+  {
+    "usuarioEmail": "lauti@gmail.com",
+    "materialNombre": "plastico1",
+    "materialDescripcion": "f",
+    "materialTipo": "PLASTICO",
+    "materialPeso": 1.0,
+    "puntoNombre": "pedriel",
+    "cantidad": 1.0,
+    "fecha": "2025-11-21T15:42:55.54241"
   }
 ]
